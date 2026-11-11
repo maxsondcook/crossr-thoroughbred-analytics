@@ -1,0 +1,20 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      CROSSR_FRONTEND_ORIGIN: http://localhost:3000,http://127.0.0.1:3000
+      # All data comes from Postgres; use crossr_dev (or a copy), never production.
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL to the crossr_dev database}
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      API_INTERNAL: http://api:8000
+    depends_on:
+      - api

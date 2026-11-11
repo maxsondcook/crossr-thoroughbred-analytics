@@ -1,0 +1,28 @@
+.git
+web/node_modules
+web/.next
+**/__pycache__
+*.pyc
+.mypy_cache
+.pytest_cache
+.env
+# All data lives in Postgres (loaded by scripts/load_railway.py); keep every
+# data file out of the image so the API cannot read one by accident.
+data/
+pedigrees_database.py
+hypofoals.py
+Analyzed Sales/
+Upcoming Sales/
+placeholderdatabase/
+stallion_rankings_data/
+live_foal_statistics/
+*.csv
+*.db
+*.db-wal
+*.db-shm
+sales_data/
+equibase_export/
+equibase_new_horses.csv
+**/cache/
+**/chrome_profile*/
+pq_scraper/cache_*/
