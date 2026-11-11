@@ -6,6 +6,16 @@ Sales still run on printed catalogs that are thousands of pages long. CROSSR put
 
 > **About this repository.** CROSSR runs privately against a historical database that isn't included here. This public copy starts with fresh history: the private repository's history included data-collection code for sources I can't redistribute, so it isn't published. No data, trained models or credentials are in this repo.
 
+<!-- DEMO: put the video link and 3–4 screenshots here, then remove this comment.
+## Demo
+
+[![CROSSR demo video](docs/images/video-thumbnail.png)](VIDEO_URL)
+
+| Stallion profile | Hypomating | Sale catalog |
+|---|---|---|
+| ![](docs/images/stallion.png) | ![](docs/images/hypomating.png) | ![](docs/images/sale.png) |
+-->
+
 ## What it does
 
 - **Horse profiles:** a 5-generation pedigree, female family and produce record, race record, and sections that depend on the horse's type. Stallions get stud fee, mares bred, rankings, progeny statistics, top progeny, best broodmare-sire crosses and auction results. Mares get suggested stallions. Colts get similar active stallions.
@@ -23,6 +33,16 @@ Sales still run on printed catalogs that are thousands of pages long. CROSSR put
 | Price model | Censored (Tobit) regression on log price, so lots that didn't meet their reserve count as "at least the last bid" instead of being dropped; tested on held-out sale years, rolling forward | [`crossr_core/sales_model.py`](crossr_core/sales_model.py), [`scripts/train_sales_model.py`](scripts/train_sales_model.py), [`docs/sales-model.md`](docs/sales-model.md) |
 | Feature engineering | Sire, dam and family features rebuilt as of each sale year, so the model never sees later results | [`crossr_core/price_features.py`](crossr_core/price_features.py) |
 | API and access control | FastAPI JSON API; the browser only receives JSON, and pages are hidden from anyone without an approved session | [`crossr_api/app.py`](crossr_api/app.py), [`crossr_core/access.py`](crossr_core/access.py) |
+
+<!-- RESULTS: add once the metrics are re-run and verified, then remove this comment.
+## Price model results
+
+Held-out sale years, rolling forward (train on all earlier years, test on the next):
+
+| Test year | Lots | Median abs. error (log price) | 80% interval coverage |
+|---|---|---|---|
+| … | … | … | … |
+-->
 
 ## Architecture
 
@@ -55,12 +75,14 @@ tests/                  Unit tests and an end-to-end API suite (tests/e2e)
 
 ## Running it
 
-The app reads everything from PostgreSQL, so it needs a populated database, which isn't included. The unit tests that don't need a database run with:
+The app reads everything from PostgreSQL, so it needs a populated database, which isn't included. The unit tests don't need a database (136 pass, 2 skipped):
 
 ```bash
 pip install -r requirements.txt
-python3 -m pytest tests/test_identity.py tests/test_stallion_stats.py tests/test_sire_sales.py
+python3 -m pytest tests --ignore=tests/e2e
 ```
+
+The end-to-end API suite in `tests/e2e` runs against a test database.
 
 ## How it was built
 
