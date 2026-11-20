@@ -114,6 +114,25 @@ sales (Keeneland September, the leading 2-year-old sales) 78.6%.
 0.29, sale level and market forecast 0.16, family effects 0.03, consignor 0.03, sire's crop
 0.03. Everything else is under 0.02 each.
 
+### How much is pedigree?
+
+`decompose_price.py` refits the model with only some inputs. Placement here means sale,
+hip position and consignor; sales companies place horses after inspecting them, so it mixes
+pedigree with a first look at the horse. Test years 2021–2025, share of log-price variation:
+
+| | Share |
+|---|---|
+| Pedigree only (sire, dam, family, stud fee, black type) | 9% |
+| Shared by pedigree and placement (incl. age, sex, foaling date) | 33% |
+| Placement only | 17% |
+| **Unexplained: physical, vet, buyer competition, luck** | **42%** |
+
+- **Pedigree on its own explains about 41%** (R² 0.414); placement on its own 50%; both 58%.
+- **Physical, vet and luck account for at least 42%,** and up to about 59% if placement's own
+  17% is mostly the inspectors' view of the horse.
+- **Within one sale session, pedigree explains 16%** of the differences between horses and
+  everything together 28%. Most of what separates neighbouring horses isn't in the catalog.
+
 ### Breeze times for 2-year-olds
 
 At 2-year-old sales, horses breeze (gallop a short timed distance) days before the sale.
@@ -206,6 +225,7 @@ python rolling_price.py --obs --post-only  # updates, ranges, dollar scores only
 python obs_2yo.py                       # breeze-time model
 python train_ebv.py                     # breeding-value models (v1, saved)
 python ebv_ranking.py                   # ranking scores
+python decompose_price.py               # pedigree vs placement shares (about 5 minutes)
 python -m pytest tests -q               # no-peeking tests (no data needed)
 ```
 

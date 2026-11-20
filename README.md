@@ -14,6 +14,7 @@ The models are in [`models_final/`](models_final/); the full write-up is [`model
 | **2-year-olds with breeze times** (OBS, 2025–2026) | R² 0.315 → **0.575** once the timed workout is added |
 | **Mare breeding value** (1,659 foals) | The model's top fifth of mares sells foals for **×2.69** the bottom fifth's price-to-fee ratio; matings it recommends were profitable **68%** of the time vs 30% for the rest |
 | **Stallion breeding value** (259 sires) | Ranking correlation (Spearman) **0.43** with lifetime AEI |
+| **Pedigree vs the rest** | Pedigree alone explains about **41%** of price variation; sale placement (sale, hip, consignor) adds 17%; about **42%** is left for physical, vet and luck |
 | **No-peeking tests** | 17 tests scramble every price a model shouldn't know yet and check that predictions don't move; they catch deliberately planted leaks |
 
 **How the price model works:**
