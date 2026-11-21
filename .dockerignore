@@ -24,5 +24,3 @@ sales_data/
 equibase_export/
 equibase_new_horses.csv
 **/cache/
-**/chrome_profile*/
-pq_scraper/cache_*/
