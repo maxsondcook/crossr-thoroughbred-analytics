@@ -277,8 +277,8 @@ def attach_stud_fees(
     """
     Attach stud fee to each lot for ``fee_year_field`` (covering_year or sale_year).
 
-    BloodHorse CSV + JSON are consulted first (no network). Scrapes Racing Post
-    only when ``scrape_missing`` is True and the year is still unknown.
+    Fees come only from the local fee tables; nothing is fetched from the web.
+    ``scrape_missing`` and ``max_scrapes`` are accepted for older callers and ignored.
     """
     db = fee_db.load_fee_database()
     fee_db.load_csv_fee_history()
@@ -287,15 +287,9 @@ def attach_stud_fees(
         "lots": len(lots),
         "matched": 0,
         "missing_fee": 0,
-        "scrapes_ok": 0,
-        "scrapes_fail": 0,
         "cache_hits": 0,
         "fee_year_field": fee_year_field,
     }
-
-    # Deduplicate scrape attempts by normalized sire
-    scrape_budget = max_scrapes if max_scrapes is not None else 10**9
-    failed_sires = set()
 
     needed = {}
     for lot in lots:
@@ -307,37 +301,12 @@ def attach_stud_fees(
 
     fee_cache: Dict[Tuple[str, int], Optional[int]] = {}
     for (norm, year), display_name in sorted(needed.items(), key=lambda x: (x[0][0], x[0][1])):
-        cached = fee_db.get_fee_for_year(
+        fee = fee_db.get_fee_for_year(
             display_name, year, db, allow_nearest_prior=allow_nearest_prior
         )
-        if cached is not None:
-            fee_cache[(norm, year)] = cached
+        fee_cache[(norm, year)] = fee
+        if fee is not None:
             stats["cache_hits"] += 1
-            continue
-
-        if not scrape_missing or norm in failed_sires or scrape_budget <= 0:
-            fee_cache[(norm, year)] = None
-            continue
-
-        fee, db, note = fee_db.ensure_fee_for_year(
-            display_name, year, db=db, scrape_if_missing=True, persist=True
-        )
-        scrape_budget -= 1
-        if note == "scraped" or (note == "scraped_no_year" and fee is not None):
-            stats["scrapes_ok"] += 1
-        elif note not in ("cache", "missing"):
-            stats["scrapes_fail"] += 1
-            failed_sires.add(norm)
-        # Re-resolve so CSV / plausibility filters still apply after scrape.
-        fee_cache[(norm, year)] = fee_db.get_fee_for_year(
-            display_name, year, db, allow_nearest_prior=allow_nearest_prior
-        ) or fee
-
-        if progress_every and (stats["scrapes_ok"] + stats["scrapes_fail"]) % progress_every == 0:
-            print(
-                f"  … scraped {stats['scrapes_ok']} ok / {stats['scrapes_fail']} fail "
-                f"(budget left ~{scrape_budget})"
-            )
 
     for lot in lots:
         norm = fee_db._norm_name(lot["sire"])
@@ -751,7 +720,7 @@ def build_dataset(
     print(
         f"  Matched fees: {stats['matched']:,} | Missing: {stats['missing_fee']:,} | "
         f"Cache hits: {stats['cache_hits']:,} | "
-        f"Scraped ok/fail: {stats['scrapes_ok']}/{stats['scrapes_fail']}"
+        f"Fees found locally: {stats['cache_hits']}"
     )
     model = fit_price_fee_model(enriched)
     return enriched, stats, model
