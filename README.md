@@ -1,5 +1,7 @@
 # CROSSR
 
+[![tests](https://github.com/maxsondcook/crossr-thoroughbred-analytics/actions/workflows/tests.yml/badge.svg)](https://github.com/maxsondcook/crossr-thoroughbred-analytics/actions/workflows/tests.yml)
+
 Thoroughbred pedigree, stallion, mating and auction analytics. A **Next.js** site (`web/`) on a **FastAPI** JSON API (`crossr_api/`), backed by **PostgreSQL**, with the analysis and models in Python (pandas, NumPy, SciPy, LightGBM, scikit-learn).
 
 Sales still run on printed catalogs that are thousands of pages long. CROSSR puts the catalog, the pedigree, the female family, how similarly bred horses did at auction and on the track, and a price estimate on one page per horse.
@@ -12,7 +14,7 @@ The models are in [`models_final/`](models_final/); the full write-up is [`model
 |---|---|
 | **Auction sale price** (32,758 weanlings, yearlings and 2-year-olds) | R² **0.608** on log price (a first gradient-boosting model scored 0.406); typical miss ×1.79; 80% ranges hold **79.9%** of prices |
 | **2-year-olds with breeze times** (OBS, 2025–2026) | R² 0.315 → **0.575** once the timed workout is added |
-| **Mare breeding value** (1,659 foals) | The model's top fifth of mares sells foals for **×2.69** the bottom fifth's price-to-fee ratio; matings it recommends were profitable **68%** of the time vs 30% for the rest |
+| **Mare breeding value** (1,659 foals) | The model's top fifth of mares sells foals for **×2.69** the bottom fifth's price-to-fee ratio. Matings that met its breeding rule were profitable **68%** of the time vs 30% for the rest; this is an association in past sales, not a tested effect of following the rule |
 | **Stallion breeding value** (259 sires) | Ranking correlation (Spearman) **0.43** with lifetime AEI |
 | **Pedigree vs the rest** | Pedigree alone explains about **41%** of price variation; sale placement (sale, hip, consignor) adds 17%; about **42%** is left for physical, vet and luck |
 | **No-peeking tests** | 17 tests scramble every price a model shouldn't know yet and check that predictions don't move; they catch deliberately planted leaks |
@@ -21,6 +23,7 @@ The models are in [`models_final/`](models_final/); the full write-up is [`model
 - Gradient-boosted trees (LightGBM), retrained before every sale year on all earlier years, with recent years weighted more.
 - Horses that went unsold are kept as censored observations (their value was below the reserve), not dropped.
 - Inputs are all known before the sale: catalog position, consignor, sire and dam records, the horse's earlier sale, and a forecast of this year's market move.
+- Catalog position (hip number) is the strongest single input. That is expected: sales companies inspect the horses and place the best in the early books, so placement carries their pre-sale judgment. It is public before bidding, so it isn't leakage. The pedigree-vs-placement breakdown above shows what the model adds beyond it.
 - Three corrections are learned from earlier data only: a bias shift, an update from the sale's earlier sessions, and an update from the sire's foals sold earlier that year. Each is shrunk toward zero when evidence is thin.
 - Calibrated 80% ranges are widened by price tier and age, using the previous five years' misses.
 
